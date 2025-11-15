@@ -40,4 +40,4 @@ Full-stack Nuxt 3 application with Supabase authentication, database, and storag
 
 ## Live Demo
 
-[\[Add Vercel URL here if deployed\]](https://clearlakedentalsinternproject.vercel.app/photos)
+[\[Vercel Link\]](https://clearlakedentalsinternproject.vercel.app/photos)
