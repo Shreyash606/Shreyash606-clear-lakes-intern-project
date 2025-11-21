@@ -44,25 +44,35 @@ Full-stack Nuxt 3 application with Supabase authentication, database, and storag
 
 
 ## High Level Architecture
- ┌────────────────────────┐
- │        Frontend        │  (Nuxt 3 + Vue)
- │  Pages, Layouts, UI    │
- │  TailwindCSS, Routing  │
- └────────────┬───────────┘
-              │ Calls API Routes
-              ▼
- ┌────────────────────────┐
- │     Nuxt Server API    │  (/server/api/*)
- │  Auth, Database, Files │
- │  Uses Supabase Server   │
- │  -> Secure operations   │
- └────────────┬───────────┘
-              │ Uses Service Key
-              ▼
- ┌────────────────────────┐
- │        Supabase        │
- │ Auth  | Database | Storage
- │ RLS   | REST API | Buckets
- └────────────────────────┘
+
+                     ┌──────────────────────────────────────────┐
+                     │                 Client UI                 │
+                     │         (Nuxt 3 + Tailwind CSS)           │
+                     └──────────────────────────────────────────┘
+                                        │
+                                        │  HTTP Requests
+                                        ▼
+                     ┌──────────────────────────────────────────┐
+                     │        Nuxt Server API Endpoints         │
+                     │  (/api/auth/* , /api/submissions/*,      │
+                     │            /api/photos/* )                │
+                     └──────────────────────────────────────────┘
+                                        │
+                   ┌────────────────────┼────────────────────┐
+                   │                    │                    │
+                   ▼                    ▼                    ▼
+      ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐
+      │ Supabase Auth      │  │ Supabase Database   │  │ Supabase Storage   │
+      │ Email/Password     │  │   submissions table │  │  photos bucket     │
+      └────────────────────┘  └────────────────────┘  └────────────────────┘
+                   │                    │                    │
+                   └──────────────┬─────┴─────┬─────────────┘
+                                  │           │
+                                  ▼           ▼
+                      ┌────────────────────────────────┐
+                      │      Authentication Tokens      │
+                      │   stored in browser localStorage│
+                      └────────────────────────────────┘
+
 
 
