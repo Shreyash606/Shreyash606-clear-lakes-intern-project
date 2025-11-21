@@ -45,34 +45,113 @@ Full-stack Nuxt 3 application with Supabase authentication, database, and storag
 
 ## High Level Architecture
 
-                     ┌──────────────────────────────────────────┐
-                     │                 Client UI                 │
-                     │         (Nuxt 3 + Tailwind CSS)           │
-                     └──────────────────────────────────────────┘
-                                        │
-                                        │  HTTP Requests
-                                        ▼
-                     ┌──────────────────────────────────────────┐
-                     │        Nuxt Server API Endpoints         │
-                     │  (/api/auth/* , /api/submissions/*,      │
-                     │            /api/photos/* )                │
-                     └──────────────────────────────────────────┘
-                                        │
-                   ┌────────────────────┼────────────────────┐
-                   │                    │                    │
-                   ▼                    ▼                    ▼
-      ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐
-      │ Supabase Auth      │  │ Supabase Database   │  │ Supabase Storage   │
-      │ Email/Password     │  │   submissions table │  │  photos bucket     │
-      └────────────────────┘  └────────────────────┘  └────────────────────┘
-                   │                    │                    │
-                   └──────────────┬─────┴─────┬─────────────┘
-                                  │           │
-                                  ▼           ▼
-                      ┌────────────────────────────────┐
-                      │      Authentication Tokens      │
-                      │   stored in browser localStorage│
-                      └────────────────────────────────┘
+              flowchart TD
 
+%% FRONTEND
+A[User<br/>Browser] --> B[Nuxt 3 Frontend<br/>(Pages + Components)]
+B --> C[Route Middleware<br/>(Auth Check)]
+
+%% SERVER
+C --> D[Nuxt Server API<br/>(/api/* Endpoints)]
+
+%% AUTH
+D --> E[Supabase Auth<br/>(Email/Password)]
+E --> D
+
+%% DATABASE
+D --> F[Supabase Database<br/>(submissions table)]
+
+%% STORAGE
+D --> G[Supabase Storage<br/>(photos bucket)]
+
+%% RETURN FLOW
+F --> D
+G --> D
+D --> B
+
+## Data Flow Diagram (End-to-End)
+sequenceDiagram
+    participant U as User
+    participant F as Nuxt Frontend
+    participant API as Nuxt Server API
+    participant SB_AUTH as Supabase Auth
+    participant SB_DB as Supabase Database
+    participant SB_ST as Supabase Storage
+
+    %% LOGIN/SIGNUP FLOW
+    U->>F: Enter email & password
+    F->>API: POST /api/auth/login or signup
+    API->>SB_AUTH: Validate credentials
+    SB_AUTH-->>API: user + session + token
+    API-->>F: return session
+    F-->>U: Save token & redirect
+
+    %% SUBMISSION FLOW
+    U->>F: Fill form & submit
+    F->>API: POST /api/submissions/add
+    API->>SB_DB: Insert submission row
+    SB_DB-->>API: Return inserted data
+    API-->>F: Response
+    F-->>U: Show success
+
+    %% GET SUBMISSIONS
+    F->>API: GET /api/submissions/get
+    API->>SB_DB: Fetch rows
+    SB_DB-->>API: Return list
+    API-->>F: JSON submissions
+    F-->>U: Display submissions
+
+    %% PHOTO UPLOAD
+    U->>F: Upload image
+    F->>API: POST /api/photos/upload (base64)
+    API->>SB_ST: Upload to photos bucket
+    SB_ST-->>API: Upload success
+    API-->>F: OK
+
+    %% LIST PHOTOS
+    F->>API: GET /api/photos/list
+    API->>SB_ST: Get file list + public URLs
+    SB_ST-->>API: File metadata
+    API-->>F: Array of URLs
+    F-->>U: Display gallery grid
+
+
+## Component Interaction Diagram
+flowchart LR
+
+subgraph Frontend [Nuxt 3 Frontend]
+    P[Pages\n(Login, Signup, Photos, Submissions)]
+    M[Middleware\nauth.global.ts]
+    C[Components\n(Form, Cards, Gallery)]
+end
+
+subgraph ServerAPI [Nuxt Server API]
+    A1[/api/auth/*]
+    S1[/api/submissions/*]
+    P1[/api/photos/*]
+end
+
+subgraph Supabase
+    A[Auth Service]
+    D[Postgres Database\n(submissions table)]
+    ST[Storage Bucket\n(photos)]
+end
+
+P --> M
+M --> A1
+M --> P1
+M --> S1
+
+A1 --> A
+S1 --> D
+P1 --> ST
+
+A --> A1
+D --> S1
+ST --> P1
+
+A1 --> P
+S1 --> P
+P1 --> P
 
 
