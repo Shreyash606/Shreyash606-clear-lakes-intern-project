@@ -41,3 +41,28 @@ Full-stack Nuxt 3 application with Supabase authentication, database, and storag
 ## Live Demo
 
 [\[Vercel Link\]](https://clearlakedentalsinternproject.vercel.app/photos)
+
+
+## High Level Architecture
+ ┌────────────────────────┐
+ │        Frontend        │  (Nuxt 3 + Vue)
+ │  Pages, Layouts, UI    │
+ │  TailwindCSS, Routing  │
+ └────────────┬───────────┘
+              │ Calls API Routes
+              ▼
+ ┌────────────────────────┐
+ │     Nuxt Server API    │  (/server/api/*)
+ │  Auth, Database, Files │
+ │  Uses Supabase Server   │
+ │  -> Secure operations   │
+ └────────────┬───────────┘
+              │ Uses Service Key
+              ▼
+ ┌────────────────────────┐
+ │        Supabase        │
+ │ Auth  | Database | Storage
+ │ RLS   | REST API | Buckets
+ └────────────────────────┘
+
+
